@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "414640959803",
+    "firebase_url": "https://alert-95771-default-rtdb.firebaseio.com",
+    "project_id": "alert-95771",
+    "storage_bucket": "alert-95771.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:414640959803:android:527ff0efdc698a0df0471e",
+        "android_client_info": {
+          "package_name": "com.watch"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBgza5kWDi3qY9QbHhd5S7rtOwwSowHBd8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
