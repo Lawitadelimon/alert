@@ -1,60 +1,60 @@
 import 'dart:async';
 import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class VitalSignsScreen extends StatefulWidget {
-  const VitalSignsScreen({super.key});
+  const VitalSignsScreen({super.key}); // ¡Sin userId!
 
   @override
   State<VitalSignsScreen> createState() => _VitalSignsScreenState();
 }
 
 class _VitalSignsScreenState extends State<VitalSignsScreen> {
-  final TextEditingController _tokenController = TextEditingController();
-  String? userToken;
   Timer? _timer;
-
   final Random _random = Random();
+  String? uid;
+
+  @override
+  void initState() {
+    super.initState();
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      uid = user.uid;
+      _startSendingData();
+    } else {
+      // Por si ocurre algo raro con el auth
+      debugPrint('⚠️ Usuario no autenticado');
+    }
+  }
 
   @override
   void dispose() {
     _timer?.cancel();
-    _tokenController.dispose();
     super.dispose();
   }
 
   void _startSendingData() {
     _timer?.cancel();
-
     _timer = Timer.periodic(const Duration(seconds: 10), (_) {
-      if (userToken == null || userToken!.isEmpty) return;
+      if (uid == null || uid!.isEmpty) return;
 
-      final ritmoCardiaco = 60 + _random.nextInt(40); // 60–100 bpm
-      final oxigenacion = 95 + _random.nextInt(5); // 95–99 %
+      final heartRate = 60 + _random.nextInt(40); // 60–100
+      final temperature = 36 + _random.nextDouble(); // 36–37°C
 
       FirebaseFirestore.instance
           .collection('vital_signs')
-          .doc(userToken)
+          .doc(uid)
           .collection('readings')
           .add({
-        'ritmo_cardiaco': ritmoCardiaco,
-        'oxigenacion': oxigenacion,
+        'ritmo_cardiaco': heartRate,
+        'oxigenacion': temperature,
         'timestamp': Timestamp.now(),
       });
 
-      debugPrint('Enviado: Pulso $ritmoCardiaco bpm, Oxígeno $oxigenacion%');
+      debugPrint('✅ Datos enviados: HR $heartRate, O2 $temperature');
     });
-  }
-
-  void _submitToken() {
-    final token = _tokenController.text.trim();
-    if (token.isNotEmpty) {
-      setState(() {
-        userToken = token;
-      });
-      _startSendingData();
-    }
   }
 
   @override
@@ -64,39 +64,20 @@ class _VitalSignsScreenState extends State<VitalSignsScreen> {
         title: const Text('Signos Vitales'),
         centerTitle: true,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(12),
-        child: SingleChildScrollView(
-          child: userToken == null
-              ? Column(
-                  children: [
-                    const Text("Ingresa el token del usuario:"),
-                    TextField(
-                      controller: _tokenController,
-                      decoration: const InputDecoration(labelText: 'Token/UID'),
-                    ),
-                    const SizedBox(height: 16),
-                    ElevatedButton(
-                      onPressed: _submitToken,
-                      child: const Text('Empezar'),
-                    ),
-                  ],
-                )
-              : Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Text(
-                      'Enviando signos vitales...',
-                      style: TextStyle(fontSize: 18),
-                    ),
-                    const SizedBox(height: 20),
-                    Text(
-                      'Usuario: $userToken',
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
-                ),
-        ),
+      body: Center(
+        child: uid == null
+            ? const Text('Error: Usuario no autenticado')
+            : Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text(
+                    'Enviando signos vitales...',
+                    style: TextStyle(fontSize: 18),
+                  ),
+                  const SizedBox(height: 20),
+                  Text('Usuario: $uid'),
+                ],
+              ),
       ),
     );
   }
