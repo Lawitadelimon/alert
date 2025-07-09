@@ -34,7 +34,7 @@ class _LoginScreenState extends State<LoginScreen> {
       final uid = userCredential.user?.uid;
       if (uid != null) {
         if (!mounted) return;
-        widget.onLoginSuccess(uid); // ✅ Notifica al padre (main.dart)
+        widget.onLoginSuccess(uid);
       } else {
         setState(() {
           error = 'No se pudo obtener el usuario.';
@@ -148,46 +148,91 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Login')),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
+      appBar: AppBar(
+        title: const Text('Iniciar sesión'),
+        centerTitle: true,
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(24),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            const SizedBox(height: 24),
+            const Text(
+              '¡Bienvenido a AlertMe!',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 12),
+            const Text(
+              'Inicia sesión para acceder a tus datos y contactos de emergencia.',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 16),
+            ),
+            const SizedBox(height: 40),
+
             TextField(
               controller: emailController,
-              decoration: const InputDecoration(labelText: 'Correo electrónico'),
+              decoration: const InputDecoration(
+                labelText: 'Correo electrónico',
+                border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.email),
+              ),
               keyboardType: TextInputType.emailAddress,
             ),
+            const SizedBox(height: 24),
+
             TextField(
               controller: passwordController,
-              decoration: const InputDecoration(labelText: 'Contraseña'),
+              decoration: const InputDecoration(
+                labelText: 'Contraseña',
+                border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.lock),
+              ),
               obscureText: true,
             ),
-            const SizedBox(height: 20),
-            if (error != null) Text(error!, style: const TextStyle(color: Colors.red)),
+            const SizedBox(height: 32),
+
+            if (error != null)
+              Text(
+                error!,
+                style: const TextStyle(color: Colors.red),
+                textAlign: TextAlign.center,
+              ),
+
             isLoading
-                ? const CircularProgressIndicator()
+                ? const Center(child: CircularProgressIndicator())
                 : ElevatedButton(
                     onPressed: _login,
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                    ),
                     child: const Text('Iniciar sesión'),
                   ),
+
             TextButton(
               onPressed: _showResetPasswordDialog,
               child: const Text('¿Olvidaste tu contraseña?'),
             ),
-            TextButton(
+
+            const SizedBox(height: 12),
+            OutlinedButton(
               onPressed: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (_) => RegisterScreen(
-                      onRegisterSuccess: widget.onLoginSuccess, // ✅ Pasa la función también al registro
+                      onRegisterSuccess: widget.onLoginSuccess,
                     ),
                   ),
                 );
               },
               child: const Text('Crear cuenta'),
             ),
+            const SizedBox(height: 24),
           ],
         ),
       ),

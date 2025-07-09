@@ -75,7 +75,23 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
         if (!mounted) return;
 
-        widget.onRegisterSuccess(uid); // ✅ Redirige al HomeScreen
+        await showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Registro exitoso'),
+            content: const Text('Excelente, te has registrado con éxito.'),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: const Text('Aceptar'),
+              ),
+            ],
+          ),
+        );
+
+        widget.onRegisterSuccess(uid);
       } else {
         setState(() {
           error = 'No se pudo obtener el UID del usuario.';
@@ -116,17 +132,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
               controller: usernameController,
               decoration: const InputDecoration(labelText: 'Nombre de usuario'),
             ),
+            const SizedBox(height: 24), // Espacio mayor entre los campos
             TextField(
               controller: emailController,
               decoration: const InputDecoration(labelText: 'Correo electrónico'),
               keyboardType: TextInputType.emailAddress,
             ),
+            const SizedBox(height: 24), // Espacio mayor entre los campos
             TextField(
               controller: passwordController,
               decoration: const InputDecoration(labelText: 'Contraseña'),
               obscureText: true,
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 32), // Espacio antes del botón
             if (error != null) Text(error!, style: const TextStyle(color: Colors.red)),
             isLoading
                 ? const CircularProgressIndicator()
