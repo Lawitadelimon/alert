@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class RegisterScreen extends StatefulWidget {
   final Function(String uid) onRegisterSuccess;
@@ -13,9 +14,15 @@ class RegisterScreen extends StatefulWidget {
 class _RegisterScreenState extends State<RegisterScreen> {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
+  final usernameController = TextEditingController();
 
   bool isLoading = false;
   String? error;
+
+  bool _isValidEmail(String email) {
+    final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+    return emailRegex.hasMatch(email);
+  }
 
   Future<void> _register() async {
     setState(() {
@@ -23,14 +30,52 @@ class _RegisterScreenState extends State<RegisterScreen> {
       error = null;
     });
 
+    final email = emailController.text.trim();
+    final password = passwordController.text.trim();
+    final username = usernameController.text.trim();
+
+    if (!_isValidEmail(email)) {
+      setState(() {
+        error = 'Ingresa un correo electrónico válido.';
+        isLoading = false;
+      });
+      return;
+    }
+
+    if (password.length < 6) {
+      setState(() {
+        error = 'La contraseña debe tener al menos 6 caracteres.';
+        isLoading = false;
+      });
+      return;
+    }
+
+    if (username.isEmpty) {
+      setState(() {
+        error = 'Ingresa un nombre de usuario.';
+        isLoading = false;
+      });
+      return;
+    }
+
     try {
       UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
-        email: emailController.text.trim(),
-        password: passwordController.text.trim(),
+        email: email,
+        password: password,
       );
+
       final uid = userCredential.user?.uid;
+
       if (uid != null) {
-        widget.onRegisterSuccess(uid);
+        await FirebaseFirestore.instance.collection('usuarios').doc(uid).set({
+          'email': email,
+          'username': username,
+          'contactos_emergencia': [],
+        });
+
+        if (!mounted) return;
+
+        widget.onRegisterSuccess(uid); // ✅ Redirige al HomeScreen
       } else {
         setState(() {
           error = 'No se pudo obtener el UID del usuario.';
@@ -55,6 +100,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   void dispose() {
     emailController.dispose();
     passwordController.dispose();
+    usernameController.dispose();
     super.dispose();
   }
 
@@ -66,6 +112,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
+            TextField(
+              controller: usernameController,
+              decoration: const InputDecoration(labelText: 'Nombre de usuario'),
+            ),
             TextField(
               controller: emailController,
               decoration: const InputDecoration(labelText: 'Correo electrónico'),

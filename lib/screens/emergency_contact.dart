@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -59,63 +60,69 @@ class _EmergencyContactsPageState extends State<EmergencyContactsPage> {
     });
   }
 
-void guardarContactos() async {
-  final uid = FirebaseAuth.instance.currentUser?.uid;
-  if (uid == null) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Usuario no autenticado')),
-    );
-    return;
-  }
-
-  List<Map<String, String>> contactosList = [];
-
-  for (var contacto in contactos) {
-    String nombre = contacto['nombre']!.text.trim();
-    String telefono = contacto['telefono']!.text.trim();
-
-    if (nombre.isEmpty || telefono.isEmpty) {
+  void guardarContactos() async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Completa todos los campos antes de guardar')),
+        const SnackBar(content: Text('Usuario no autenticado')),
       );
       return;
     }
 
-    contactosList.add({
-      'nombre': nombre,
-      'telefono': telefono,
-    });
+    List<Map<String, String>> contactosList = [];
+
+    for (var contacto in contactos) {
+      String nombre = contacto['nombre']!.text.trim();
+      String telefono = contacto['telefono']!.text.trim();
+
+      if (nombre.isEmpty || telefono.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Completa todos los campos antes de guardar')),
+        );
+        return;
+      }
+
+      // Validar que el número tenga exactamente 10 dígitos
+      if (!RegExp(r'^\d{10}$').hasMatch(telefono)) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Número inválido: $telefono')),
+        );
+        return;
+      }
+
+      contactosList.add({
+        'nombre': nombre,
+        'telefono': telefono,
+      });
+    }
+
+    try {
+      await FirebaseFirestore.instance.collection('usuarios').doc(uid).update({
+        'contactos_emergencia': contactosList,
+      });
+
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('¡Excelente!'),
+          content: const Text('Los contactos fueron guardados correctamente.'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                Navigator.of(context).pop();
+              },
+              child: const Text('Aceptar'),
+            ),
+          ],
+        ),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error al guardar: $e')),
+      );
+    }
   }
-
-  try {
-    await FirebaseFirestore.instance.collection('usuarios').doc(uid).update({
-      'contactos_emergencia': contactosList,
-    });
-
-    // Mostrar cuadro de diálogo de éxito
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('¡Excelente!'),
-        content: const Text('Los contactos fueron guardados correctamente.'),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop(); // Cierra el diálogo
-              Navigator.of(context).pop(); // Regresa a la pantalla anterior~
-            },
-            child: const Text('Aceptar'),
-          ),
-        ],
-      ),
-    );
-  } catch (e) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Error al guardar: $e')),
-    );
-  }
-}
-
 
   @override
   Widget build(BuildContext context) {
@@ -174,9 +181,13 @@ void guardarContactos() async {
                             Expanded(
                               child: TextField(
                                 controller: contacto['telefono'],
-                                keyboardType: TextInputType.phone,
+                                keyboardType: TextInputType.number,
+                                inputFormatters: [
+                                  FilteringTextInputFormatter.digitsOnly,
+                                  LengthLimitingTextInputFormatter(10),
+                                ],
                                 decoration: const InputDecoration(
-                                  hintText: 'Número de teléfono',
+                                  hintText: 'Ej. 5512345678',
                                   border: OutlineInputBorder(),
                                 ),
                               ),
@@ -212,7 +223,6 @@ void guardarContactos() async {
               label: const Text('Guardar'),
               style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
             ),
-            
           ],
         ),
       ),

@@ -1,6 +1,7 @@
 import 'dart:async';
+import 'package:alertmecel/screens/home_screen.dart';
 import 'package:alertmecel/screens/login_screen.dart';
-import 'package:alertmecel/screens/register_screen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -15,11 +16,26 @@ class _SplashScreenState extends State<SplashScreen> {
   void initState() {
     super.initState();
 
-    // Esperar 4 segundos y luego navegar a WelcomeScreen
-    Timer(const Duration(seconds: 4), () {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) =>  LoginScreen(onLoginSuccess: (String uid) {  },)),
-      );
+    Timer(const Duration(seconds: 3), () {
+      final user = FirebaseAuth.instance.currentUser;
+
+      if (user != null) {
+        // Usuario autenticado -> HomeScreen
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => HomeScreen(userId: user.uid)),
+        );
+      } else {
+        // No autenticado -> LoginScreen, pasando callback vacío
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (_) => LoginScreen(
+              onLoginSuccess: (String userId) {
+                // Aquí puedes manejar login exitoso si quieres
+              },
+            ),
+          ),
+        );
+      }
     });
   }
 
@@ -28,7 +44,7 @@ class _SplashScreenState extends State<SplashScreen> {
     return Scaffold(
       body: Center(
         child: Image.asset(
-          'assets/logo.png', 
+          'assets/logo.png',
           width: 200,
           height: 200,
         ),

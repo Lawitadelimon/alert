@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'firebase_options.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
+import 'firebase_options.dart';
+import 'theme/app_theme.dart';
 import 'screens/login_screen.dart';
-import 'screens/register_screen.dart';
 import 'screens/home_screen.dart';
 
 void main() async {
@@ -23,6 +24,7 @@ class PhoneApp extends StatefulWidget {
 
 class _PhoneAppState extends State<PhoneApp> {
   String? uid;
+  bool loading = true;
 
   void onLoginOrRegisterSuccess(String userId) {
     setState(() {
@@ -31,12 +33,25 @@ class _PhoneAppState extends State<PhoneApp> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser != null) {
+      uid = currentUser.uid;
+    }
+    loading = false;
+  }
+
+  @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'App Teléfono',
-      home: uid == null
-          ? LoginScreen(onLoginSuccess: onLoginOrRegisterSuccess)
-          : HomeScreen(userId: uid!),
+      title: 'AlertMe',
+      theme: AppTheme.lightTheme, // si usas un tema
+      home: loading
+          ? const Scaffold(body: Center(child: CircularProgressIndicator()))
+          : uid == null
+              ? LoginScreen(onLoginSuccess: onLoginOrRegisterSuccess)
+              : HomeScreen(userId: uid!),
     );
   }
 }
