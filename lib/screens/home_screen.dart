@@ -8,7 +8,13 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 class HomeScreen extends StatefulWidget {
   final String userId;
-  const HomeScreen({super.key, required this.userId});
+  final VoidCallback onLogout;
+
+  const HomeScreen({
+    Key? key,
+    required this.userId,
+    required this.onLogout,
+  }) : super(key: key);
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -29,12 +35,7 @@ class _HomeScreenState extends State<HomeScreen> {
             onPressed: () async {
               await FirebaseAuth.instance.signOut();
               if (!mounted) return;
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => LoginScreen(onLoginSuccess: (_) {}),
-                ),
-              );
+              widget.onLogout();
             },
           ),
         ],

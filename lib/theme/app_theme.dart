@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 
 class AppTheme {
-  // Colores base
-  static const Color primaryColor = Color(0xFF2E7D32); // verde fuerte
-  static const Color primaryLight = Color(0xFF60AD5E); // verde claro
-  static const Color primaryDark = Color(0xFF005005); // verde oscuro
+
+  static const Color primaryColor = Color(0xFF2E7D32); 
+  static const Color primaryLight = Color(0xFF60AD5E); 
+  static const Color primaryDark = Color(0xFF005005); 
   static const Color backgroundColor = Colors.white;
   static const Color textColor = Colors.black87;
-  static const Color cardColor = Color(0xFFDFF5E1);// verde muy pálido
+  static const Color cardColor = Color(0xFFDFF5E1);
   static const Color buttonColor = Color(0xFF007F00); 
 
   // Tema global
@@ -73,7 +73,7 @@ class AppTheme {
     );
   }
 
-  // Estilos de texto personalizados
+  
   static const TextStyle titleText = TextStyle(
     fontSize: 20,
     fontWeight: FontWeight.bold,

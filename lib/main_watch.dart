@@ -36,7 +36,7 @@ class _WatchAppState extends State<WatchApp> {
       title: 'App Smartwatch',
       home: uid == null
           ? LoginScreen(onLoginSuccess: onLoginSuccess)
-          : const VitalSignsScreen(), // o la pantalla que envía datos
+          : const VitalSignsScreen(), 
     );
   }
 }

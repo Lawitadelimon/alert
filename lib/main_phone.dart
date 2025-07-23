@@ -6,6 +6,7 @@ import 'firebase_options.dart';
 import 'theme/app_theme.dart';
 import 'screens/login_screen.dart';
 import 'screens/home_screen.dart';
+import 'screens/splash_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -25,6 +26,7 @@ class PhoneApp extends StatefulWidget {
 class _PhoneAppState extends State<PhoneApp> {
   String? uid;
   bool loading = true;
+  bool splashDone = false;
 
   void onLoginOrRegisterSuccess(String userId) {
     setState(() {
@@ -32,26 +34,33 @@ class _PhoneAppState extends State<PhoneApp> {
     });
   }
 
-  @override
-  void initState() {
-    super.initState();
+  void onLogout() {
+    setState(() {
+      uid = null;
+    });
+  }
+
+  void onSplashFinished() {
     final currentUser = FirebaseAuth.instance.currentUser;
-    if (currentUser != null) {
-      uid = currentUser.uid;
-    }
-    loading = false;
+    setState(() {
+      splashDone = true;
+      uid = currentUser?.uid;
+      loading = false;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'AlertMe',
-      theme: AppTheme.lightTheme, // si usas un tema
-      home: loading
-          ? const Scaffold(body: Center(child: CircularProgressIndicator()))
-          : uid == null
-              ? LoginScreen(onLoginSuccess: onLoginOrRegisterSuccess)
-              : HomeScreen(userId: uid!),
+      theme: AppTheme.lightTheme,
+      home: !splashDone
+          ? SplashScreen(onSplashFinished: onSplashFinished)
+          : loading
+              ? const Scaffold(body: Center(child: CircularProgressIndicator()))
+              : uid == null
+                  ? LoginScreen(onLoginSuccess: onLoginOrRegisterSuccess)
+                  : HomeScreen(userId: uid!, onLogout: onLogout),
     );
   }
 }
