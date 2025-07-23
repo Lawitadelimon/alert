@@ -53,7 +53,7 @@ class _PhoneAppState extends State<PhoneApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'AlertMe',
-      theme: AppTheme.lightTheme,
+      theme: AppTheme.themeData,
       home: !splashDone
           ? SplashScreen(onSplashFinished: onSplashFinished)
           : loading

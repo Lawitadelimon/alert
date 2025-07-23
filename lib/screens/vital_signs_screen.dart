@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:math';
+import 'package:alertmecel/theme/app_theme.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -70,7 +71,7 @@ class _VitalSignsScreenState extends State<VitalSignsScreen> with SingleTickerPr
 
   @override
   Widget build(BuildContext context) {
-    final primaryColor = Colors.redAccent.shade100;
+    final primaryColor =  Colors.green;
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -86,7 +87,6 @@ class _VitalSignsScreenState extends State<VitalSignsScreen> with SingleTickerPr
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  // 💓 Corazón animado
                   AnimatedBuilder(
                     animation: _scaleAnimation,
                     builder: (context, child) => Transform.scale(
@@ -105,7 +105,6 @@ class _VitalSignsScreenState extends State<VitalSignsScreen> with SingleTickerPr
                   ),
                   const SizedBox(height: 16),
 
-                  // 📈 Historial
                   Expanded(
                     child: StreamBuilder<QuerySnapshot>(
                       stream: FirebaseFirestore.instance
@@ -158,9 +157,9 @@ class _VitalSignsScreenState extends State<VitalSignsScreen> with SingleTickerPr
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.redAccent.shade100.withOpacity(0.1),
+        color: Colors.green.shade100,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.redAccent.shade100),
+        border: Border.all(color: Colors.green),
       ),
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
       child: Column(

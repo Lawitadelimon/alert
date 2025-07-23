@@ -1,92 +1,67 @@
 import 'package:flutter/material.dart';
 
 class AppTheme {
+  static const Color primaryColor = Colors.green; 
+  static const Color secondaryColor = Color.fromARGB(213, 72, 238, 119); 
+  static const Color scaffoldBackground = Color(0xFFF5F7FA); 
+  static const Color cardColor = Colors.white;
 
-  static const Color primaryColor = Color(0xFF2E7D32); 
-  static const Color primaryLight = Color(0xFF60AD5E); 
-  static const Color primaryDark = Color(0xFF005005); 
-  static const Color backgroundColor = Colors.white;
-  static const Color textColor = Colors.black87;
-  static const Color cardColor = Color(0xFFDFF5E1);
-  static const Color buttonColor = Color(0xFF007F00); 
-
-  // Tema global
-  static ThemeData get lightTheme {
-    return ThemeData(
-      scaffoldBackgroundColor: backgroundColor,
-      primaryColor: primaryColor,
-      colorScheme: ColorScheme.fromSwatch().copyWith(
-        primary: primaryColor,
-        secondary: primaryLight,
-      ),
-      textTheme: const TextTheme(
-        bodyMedium: TextStyle(color: textColor),
-      ),
-      appBarTheme: const AppBarTheme(
-        backgroundColor: primaryColor,
-        foregroundColor: Colors.white,
-      ),
-      elevatedButtonTheme: ElevatedButtonThemeData(
-  style: ButtonStyle(
-    backgroundColor: WidgetStateProperty.resolveWith<Color>(
-      (states) {
-        if (states.contains(WidgetState.pressed)) return primaryDark;
-        if (states.contains(WidgetState.hovered)) return primaryLight;
-        return primaryColor;
-      },
-    ),
-    foregroundColor: WidgetStateProperty.all<Color>(Colors.white),
-    textStyle: WidgetStateProperty.all<TextStyle>(
-      const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-    ),
-    shape: WidgetStateProperty.all<RoundedRectangleBorder>(
-      RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-    ),
-    padding: WidgetStateProperty.all<EdgeInsets>(
-      const EdgeInsets.symmetric(horizontal: 40, vertical: 14),
-    ),
-    elevation: WidgetStateProperty.all(4),
-    overlayColor: WidgetStateProperty.all(primaryDark.withOpacity(0.1)),
-  ),
-),
-
-
-
-      inputDecorationTheme: InputDecorationTheme(
-        filled: true,
-        fillColor: cardColor,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-        enabledBorder: OutlineInputBorder(
-          borderSide: const BorderSide(color: primaryColor),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderSide: const BorderSide(color: primaryDark, width: 2),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        labelStyle: const TextStyle(color: textColor),
-        hintStyle: const TextStyle(color: Colors.grey),
-      ),
-      progressIndicatorTheme: const ProgressIndicatorThemeData(
-        color: primaryColor,
-      ),
-    );
-  }
-
-  
+  // Textos
   static const TextStyle titleText = TextStyle(
     fontSize: 20,
     fontWeight: FontWeight.bold,
-    color: textColor,
+    color: Colors.black87,
   );
 
-  static const TextStyle labelText = TextStyle(
+  static const TextStyle subtitleText = TextStyle(
     fontSize: 16,
-    color: textColor,
+    fontWeight: FontWeight.w600,
+    color: Colors.black54,
   );
 
-  static const TextStyle errorText = TextStyle(
+  static const TextStyle bodyText = TextStyle(
     fontSize: 14,
-    color: Colors.red,
+    color: Colors.black87,
+  );
+
+  static const TextStyle captionText = TextStyle(
+    fontSize: 12,
+    color: Colors.black45,
+  );
+
+  // Tema global para MaterialApp
+  static final ThemeData themeData = ThemeData(
+    primaryColor: primaryColor,
+    scaffoldBackgroundColor: scaffoldBackground,
+    appBarTheme: const AppBarTheme(
+      backgroundColor: primaryColor,
+      foregroundColor: Colors.white,
+      elevation: 2,
+      titleTextStyle: TextStyle(
+        fontWeight: FontWeight.bold,
+        fontSize: 22,
+      ),
+    ),
+    elevatedButtonTheme: ElevatedButtonThemeData(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: primaryColor,
+        foregroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        textStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+      ),
+    ),
+    cardTheme: const CardThemeData(
+      color: cardColor,
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(14))),
+      margin: EdgeInsets.symmetric(vertical: 6),
+    ),
+    iconTheme: const IconThemeData(color: primaryColor),
+    textTheme: const TextTheme(
+      titleLarge: titleText,
+      titleMedium: subtitleText,
+      bodyMedium: bodyText,
+      bodySmall: captionText,
+    ),
   );
 }

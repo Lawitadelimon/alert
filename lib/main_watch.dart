@@ -34,6 +34,7 @@ class _WatchAppState extends State<WatchApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'App Smartwatch',
+      theme: AppTheme.themeData,
       home: uid == null
           ? LoginScreen(onLoginSuccess: onLoginSuccess)
           : const VitalSignsScreen(), 

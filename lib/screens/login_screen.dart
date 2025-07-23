@@ -179,7 +179,8 @@ class _LoginScreenState extends State<LoginScreen> {
               decoration: const InputDecoration(
                 labelText: 'Correo electrónico',
                 border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.email),
+                prefixIcon: Icon(Icons.email,
+                color: Colors.green,),
               ),
               keyboardType: TextInputType.emailAddress,
             ),
@@ -190,7 +191,8 @@ class _LoginScreenState extends State<LoginScreen> {
               decoration: const InputDecoration(
                 labelText: 'Contraseña',
                 border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.lock),
+                prefixIcon: Icon(Icons.lock,
+                color:Colors.green),
               ),
               obscureText: true,
             ),
@@ -213,10 +215,17 @@ class _LoginScreenState extends State<LoginScreen> {
                     child: const Text('Iniciar sesión'),
                   ),
 
-            TextButton(
+                        TextButton(
               onPressed: _showResetPasswordDialog,
-              child: const Text('¿Olvidaste tu contraseña?'),
+              child: const Text(
+                '¿Olvidaste tu contraseña?',
+                style: TextStyle(
+                  color: Colors.green, 
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
             ),
+
 
             const SizedBox(height: 12),
             OutlinedButton(
@@ -230,9 +239,16 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 );
               },
-              child: const Text('Crear cuenta'),
+              style: OutlinedButton.styleFrom(
+              foregroundColor: Colors.green, 
+              side: const BorderSide(color: Colors.green), 
+              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+              textStyle: const TextStyle(fontWeight: FontWeight.bold),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
             ),
-            const SizedBox(height: 24),
+              child: const Text('Crear cuenta'),            
+            ),
+            const SizedBox(height: 15),
           ],
         ),
       ),
