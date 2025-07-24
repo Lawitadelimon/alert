@@ -1,9 +1,10 @@
 import 'dart:async';
 import 'dart:math';
-import 'package:alertmecel/theme/app_theme.dart';
+import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
+
+import 'user_profile_watch_screen.dart'; // Importa la pantalla de perfil
 
 class VitalSignsScreen extends StatefulWidget {
   const VitalSignsScreen({super.key});
@@ -71,7 +72,7 @@ class _VitalSignsScreenState extends State<VitalSignsScreen> with SingleTickerPr
 
   @override
   Widget build(BuildContext context) {
-    final primaryColor =  Colors.green;
+    final primaryColor = Colors.green;
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -79,6 +80,17 @@ class _VitalSignsScreenState extends State<VitalSignsScreen> with SingleTickerPr
         backgroundColor: primaryColor,
         title: const Text('Signos Vitales'),
         centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.person),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const UserProfileWatchScreen()),
+              );
+            },
+          ),
+        ],
       ),
       body: uid == null
           ? const Center(child: Text('⚠️ Usuario no autenticado'))
@@ -104,7 +116,6 @@ class _VitalSignsScreenState extends State<VitalSignsScreen> with SingleTickerPr
                     style: TextStyle(fontSize: 12, color: Colors.grey),
                   ),
                   const SizedBox(height: 16),
-
                   Expanded(
                     child: StreamBuilder<QuerySnapshot>(
                       stream: FirebaseFirestore.instance

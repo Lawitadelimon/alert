@@ -73,7 +73,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
         ),
-        backgroundColor: Colors.green[400],
+        backgroundColor: Colors.green,
         centerTitle: true,
       ),
       body: isLoading

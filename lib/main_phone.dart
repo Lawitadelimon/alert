@@ -54,6 +54,7 @@ class _PhoneAppState extends State<PhoneApp> {
     return MaterialApp(
       title: 'AlertMe',
       theme: AppTheme.themeData,
+      debugShowCheckedModeBanner: false,
       home: !splashDone
           ? SplashScreen(onSplashFinished: onSplashFinished)
           : loading

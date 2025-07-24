@@ -35,6 +35,7 @@ class _WatchAppState extends State<WatchApp> {
     return MaterialApp(
       title: 'App Smartwatch',
       theme: AppTheme.themeData,
+      debugShowCheckedModeBanner: false,
       home: uid == null
           ? LoginScreen(onLoginSuccess: onLoginSuccess)
           : const VitalSignsScreen(), 

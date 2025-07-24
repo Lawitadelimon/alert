@@ -133,7 +133,7 @@ class _EmergencyContactsPageState extends State<EmergencyContactsPage> {
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
         ),
-        backgroundColor: Colors.green[400],
+        backgroundColor: Colors.green,
         centerTitle: true,
       ),
       body: Padding(
