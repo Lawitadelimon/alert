@@ -38,7 +38,7 @@ class _WatchAppState extends State<WatchApp> {
       debugShowCheckedModeBanner: false,
       home: uid == null
           ? LoginScreen(onLoginSuccess: onLoginSuccess)
-          : const VitalSignsScreen(), 
+          : const VitalSignsWearScreen(), 
     );
   }
 }

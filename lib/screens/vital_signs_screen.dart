@@ -1,25 +1,31 @@
 import 'dart:async';
 import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-import 'user_profile_watch_screen.dart'; // Importa la pantalla de perfil
+import 'user_profile_watch_screen.dart';
 
-class VitalSignsScreen extends StatefulWidget {
-  const VitalSignsScreen({super.key});
+class VitalSignsWearScreen extends StatefulWidget {
+  const VitalSignsWearScreen({super.key});
 
   @override
-  State<VitalSignsScreen> createState() => _VitalSignsScreenState();
+  State<VitalSignsWearScreen> createState() => _VitalSignsWearScreenState();
 }
 
-class _VitalSignsScreenState extends State<VitalSignsScreen> with SingleTickerProviderStateMixin {
+class _VitalSignsWearScreenState extends State<VitalSignsWearScreen> with SingleTickerProviderStateMixin {
   Timer? _timer;
   final Random _random = Random();
   String? uid;
 
   late AnimationController _controller;
   late Animation<double> _scaleAnimation;
+
+  bool _isSending = true;
+
+  int _heartRate = 80;
+  double _oxygen = 97.0;
 
   @override
   void initState() {
@@ -29,9 +35,9 @@ class _VitalSignsScreenState extends State<VitalSignsScreen> with SingleTickerPr
     if (user != null) {
       uid = user.uid;
       _startSendingData();
+      _sendDataManually();
     }
 
-    // Animación de corazón
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1000),
@@ -51,10 +57,10 @@ class _VitalSignsScreenState extends State<VitalSignsScreen> with SingleTickerPr
 
   void _startSendingData() {
     _timer = Timer.periodic(const Duration(seconds: 10), (_) {
-      if (uid == null) return;
+      if (uid == null || !_isSending) return;
 
-      final heartRate = 60 + _random.nextInt(40); // 60–100 bpm
-      final oxygen = 95 + _random.nextDouble() * 5; // 95–100%
+      final heartRate = 60 + _random.nextInt(40);
+      final oxygen = 95 + _random.nextDouble() * 5;
 
       FirebaseFirestore.instance
           .collection('vital_signs')
@@ -66,8 +72,121 @@ class _VitalSignsScreenState extends State<VitalSignsScreen> with SingleTickerPr
         'timestamp': Timestamp.now(),
       });
 
-      debugPrint('✅ Enviado: HR $heartRate, O2 $oxygen');
+      debugPrint('✅ Enviado automático: HR $heartRate, O2 $oxygen');
     });
+  }
+
+  void _sendDataManually() {
+    if (uid == null) return;
+
+    FirebaseFirestore.instance
+        .collection('vital_signs')
+        .doc(uid)
+        .collection('readings')
+        .add({
+      'ritmo_cardiaco': _heartRate,
+      'oxigenacion': _oxygen,
+      'timestamp': Timestamp.now(),
+    });
+
+    debugPrint('📝 Enviado manual: HR $_heartRate, O2 $_oxygen');
+  }
+
+  void _toggleSending() {
+    setState(() {
+      _isSending = !_isSending;
+    });
+  }
+
+  void _decreaseHeartRate() {
+    if (_heartRate > 30) {
+      setState(() {
+        _heartRate -= 5;
+      });
+      _sendDataManually();
+    }
+  }
+
+  void _increaseHeartRate() {
+    if (_heartRate < 150) {
+      setState(() {
+        _heartRate += 5;
+      });
+      _sendDataManually();
+    }
+  }
+
+  void _decreaseOxygen() {
+    if (_oxygen > 50) {
+      setState(() {
+        _oxygen -= 1;
+      });
+      _sendDataManually();
+    }
+  }
+
+  void _increaseOxygen() {
+    if (_oxygen < 100) {
+      setState(() {
+        _oxygen += 1;
+      });
+      _sendDataManually();
+    }
+  }
+
+  Widget _vitalBlock({
+    required IconData icon,
+    required String label,
+    required Widget valueWidget,
+  }) {
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 2),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+      decoration: BoxDecoration(
+        color: Colors.green.shade50,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: Colors.green.shade400, width: 1),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Icon(icon, size: 18, color: Colors.green.shade700),
+          const SizedBox(width: 6),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 10,
+                  color: Colors.green.shade800,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 2),
+              valueWidget,
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _compactButton({
+    required IconData icon,
+    required VoidCallback onPressed,
+    required Color color,
+  }) {
+    return IconButton(
+      iconSize: 14,
+      padding: EdgeInsets.zero,
+      constraints: const BoxConstraints(minWidth: 14, minHeight: 14),
+      icon: Icon(icon, color: color),
+      onPressed: onPressed,
+      splashRadius: 14,
+    );
   }
 
   @override
@@ -78,10 +197,14 @@ class _VitalSignsScreenState extends State<VitalSignsScreen> with SingleTickerPr
       backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: primaryColor,
-        title: const Text('Signos Vitales'),
         centerTitle: true,
+        title: const Text(
+          'Signos Vitales',
+          style: TextStyle(fontSize: 14),
+        ),
         actions: [
           IconButton(
+            iconSize: 20,
             icon: const Icon(Icons.person),
             onPressed: () {
               Navigator.push(
@@ -92,120 +215,93 @@ class _VitalSignsScreenState extends State<VitalSignsScreen> with SingleTickerPr
           ),
         ],
       ),
-      body: uid == null
-          ? const Center(child: Text('⚠️ Usuario no autenticado'))
-          : Padding(
-              padding: const EdgeInsets.all(12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  AnimatedBuilder(
-                    animation: _scaleAnimation,
-                    builder: (context, child) => Transform.scale(
-                      scale: _scaleAnimation.value,
-                      child: const Icon(Icons.favorite, size: 48, color: Colors.redAccent),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
+          child: Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ScaleTransition(
+                  scale: _scaleAnimation,
+                  child: const Icon(Icons.favorite, size: 40, color: Colors.redAccent),
+                ),
+                const SizedBox(height: 10),
+
+                _vitalBlock(
+                  icon: Icons.favorite,
+                  label: 'Ritmo Cardíaco',
+                  valueWidget: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        _compactButton(icon: Icons.remove_circle, onPressed: _decreaseHeartRate, color: Colors.red),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 1),
+                          child: Text(
+                            '$_heartRate bpm',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black87,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        _compactButton(icon: Icons.add_circle, onPressed: _increaseHeartRate, color: Colors.green),
+                      ],
                     ),
                   ),
-                  const SizedBox(height: 10),
-                  const Text(
-                    'Monitor activo',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
-                  const Text(
-                    'Actualizando cada 10 seg.',
-                    style: TextStyle(fontSize: 12, color: Colors.grey),
-                  ),
-                  const SizedBox(height: 16),
-                  Expanded(
-                    child: StreamBuilder<QuerySnapshot>(
-                      stream: FirebaseFirestore.instance
-                          .collection('vital_signs')
-                          .doc(uid)
-                          .collection('readings')
-                          .orderBy('timestamp', descending: true)
-                          .limit(5)
-                          .snapshots(),
-                      builder: (context, snapshot) {
-                        if (snapshot.connectionState == ConnectionState.waiting) {
-                          return const Center(child: CircularProgressIndicator());
-                        }
+                ),
 
-                        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                          return const Center(child: Text('Esperando datos...'));
-                        }
-
-                        return ListView.separated(
-                          itemCount: snapshot.data!.docs.length,
-                          separatorBuilder: (_, __) => const SizedBox(height: 12),
-                          itemBuilder: (context, index) {
-                            final doc = snapshot.data!.docs[index];
-                            final data = doc.data() as Map<String, dynamic>;
-
-                            final heartRate = data['ritmo_cardiaco'];
-                            final oxygen = data['oxigenacion'];
-                            final timestamp = (data['timestamp'] as Timestamp).toDate();
-
-                            return _vitalCard(
-                              heartRate: heartRate,
-                              oxygen: oxygen,
-                              dateTime: timestamp,
-                            );
-                          },
-                        );
-                      },
+                _vitalBlock(
+                  icon: Icons.air,
+                  label: 'Oxigenación',
+                  valueWidget: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        _compactButton(icon: Icons.remove_circle, onPressed: _decreaseOxygen, color: Colors.red),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 1),
+                          child: Text(
+                            '${_oxygen.toStringAsFixed(0)}%',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black87,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        _compactButton(icon: Icons.add_circle, onPressed: _increaseOxygen, color: Colors.green),
+                      ],
                     ),
                   ),
-                ],
-              ),
+                ),
+
+                const SizedBox(height: 14),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: primaryColor,
+                    minimumSize: const Size(100, 34),
+                    padding: const EdgeInsets.symmetric(vertical: 6),
+                  ),
+                  onPressed: _toggleSending,
+                  child: Text(
+                    _isSending ? 'Pausar' : 'Reanudar',
+                    style: const TextStyle(fontSize: 14),
+                  ),
+                ),
+              ],
             ),
-    );
-  }
-
-  Widget _vitalCard({
-    required int heartRate,
-    required double oxygen,
-    required DateTime dateTime,
-  }) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.green.shade100,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.green),
-      ),
-      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            _formatTime(dateTime),
-            style: const TextStyle(fontSize: 12, color: Colors.grey),
           ),
-          const SizedBox(height: 6),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                children: [
-                  const Icon(Icons.favorite, size: 16, color: Colors.redAccent),
-                  const SizedBox(width: 6),
-                  Text('$heartRate bpm', style: const TextStyle(fontSize: 14)),
-                ],
-              ),
-              Row(
-                children: [
-                  const Icon(Icons.air, size: 16, color: Colors.blueAccent),
-                  const SizedBox(width: 6),
-                  Text('${oxygen.toStringAsFixed(1)}%', style: const TextStyle(fontSize: 14)),
-                ],
-              ),
-            ],
-          ),
-        ],
+        ),
       ),
     );
-  }
-
-  String _formatTime(DateTime dt) {
-    return '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
   }
 }

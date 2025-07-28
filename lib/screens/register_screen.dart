@@ -94,9 +94,15 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
       UserCredential userCredential = await FirebaseAuth.instance
           .createUserWithEmailAndPassword(email: email, password: password);
 
-      final uid = userCredential.user?.uid;
+      final user = userCredential.user;
+      final uid = user?.uid;
 
-      if (uid != null) {
+      if (user != null && uid != null) {
+        // Actualizar displayName en Firebase Authentication
+        await user.updateDisplayName(username);
+        await user.reload();
+
+        // Guardar usuario en Firestore
         await FirebaseFirestore.instance.collection('usuarios').doc(uid).set({
           'email': email,
           'username': username,
@@ -188,8 +194,7 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                             controller: usernameController,
                             decoration: InputDecoration(
                               labelText: 'Nombre de usuario',
-                              prefixIcon: const Icon(Icons.person,
-                              color: Colors.green),
+                              prefixIcon: const Icon(Icons.person, color: Colors.green),
                               errorText: isUsernameValid ? null : 'Campo obligatorio',
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
@@ -204,8 +209,7 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                             keyboardType: TextInputType.emailAddress,
                             decoration: InputDecoration(
                               labelText: 'Correo electrónico',
-                              prefixIcon: const Icon(Icons.email,
-                              color: Colors.green),
+                              prefixIcon: const Icon(Icons.email, color: Colors.green),
                               errorText: isEmailValid ? null : 'Correo inválido',
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
@@ -220,8 +224,7 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                             obscureText: !isPasswordVisible,
                             decoration: InputDecoration(
                               labelText: 'Contraseña',
-                              prefixIcon: const Icon(Icons.lock,
-                              color: Colors.green),
+                              prefixIcon: const Icon(Icons.lock, color: Colors.green),
                               suffixIcon: IconButton(
                                 icon: Icon(
                                   isPasswordVisible
@@ -234,9 +237,7 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                                   });
                                 },
                               ),
-                              errorText: isPasswordValid
-                                  ? null
-                                  : 'Mínimo 6 caracteres',
+                              errorText: isPasswordValid ? null : 'Mínimo 6 caracteres',
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
                               ),
@@ -254,33 +255,32 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                             child: isLoading
                                 ? const Center(child: CircularProgressIndicator())
                                 : ElevatedButton.icon(
-                            icon: const Icon(Icons.person_add_alt_1),
-                            label: const Text('Registrarse'),
-                            style: ButtonStyle(
-                              backgroundColor: WidgetStateProperty.resolveWith<Color>(
-                                (states) {
-                                  if (states.contains(WidgetState.hovered)) {
-                                    return Colors.green.shade900; 
-                                  }
-                                  return Colors.green; 
-                                },
-                              ),
-                              foregroundColor: WidgetStateProperty.all<Color>(Colors.white),
-                              overlayColor: WidgetStateProperty.all<Color>(
-                                // ignore: deprecated_member_use
-                                Colors.white.withOpacity(0.1), // Efecto al presionar
-                              ),
-                              shape: WidgetStateProperty.all<RoundedRectangleBorder>(
-                                RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                              ),
-                              padding: WidgetStateProperty.all<EdgeInsets>(
-                                const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                              ),
-                            ),
-                            onPressed: _register,
-                          ),
+                                    icon: const Icon(Icons.person_add_alt_1),
+                                    label: const Text('Registrarse'),
+                                    style: ButtonStyle(
+                                      backgroundColor: MaterialStateProperty.resolveWith<Color>(
+                                        (states) {
+                                          if (states.contains(MaterialState.hovered)) {
+                                            return Colors.green.shade900;
+                                          }
+                                          return Colors.green;
+                                        },
+                                      ),
+                                      foregroundColor: MaterialStateProperty.all<Color>(Colors.white),
+                                      overlayColor: MaterialStateProperty.all<Color>(
+                                        Colors.white.withOpacity(0.1),
+                                      ),
+                                      shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                                        RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(12),
+                                        ),
+                                      ),
+                                      padding: MaterialStateProperty.all<EdgeInsets>(
+                                        const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                                      ),
+                                    ),
+                                    onPressed: _register,
+                                  ),
                           ),
                         ],
                       ),

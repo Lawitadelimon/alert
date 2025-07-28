@@ -47,12 +47,12 @@ class _UserProfileWatchScreenState extends State<UserProfileWatchScreen> {
 
   Widget _infoTile(IconData icon, String label, String value) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
+      padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, color: Colors.green, size: 22),
-          const SizedBox(width: 12),
+          Icon(icon, color: Colors.green, size: 18),
+          const SizedBox(width: 10),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -60,15 +60,15 @@ class _UserProfileWatchScreenState extends State<UserProfileWatchScreen> {
                 Text(
                   label,
                   style: const TextStyle(
-                    fontSize: 14,
+                    fontSize: 12,
                     fontWeight: FontWeight.bold,
                     color: Colors.green,
                   ),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 2),
                 Text(
                   value.isNotEmpty ? value : 'No especificado',
-                  style: const TextStyle(fontSize: 16),
+                  style: const TextStyle(fontSize: 14),
                 ),
                 const Divider(color: Colors.green, thickness: 1),
               ],
@@ -81,11 +81,12 @@ class _UserProfileWatchScreenState extends State<UserProfileWatchScreen> {
 
   Widget _contactoTile(Map<String, dynamic> contacto) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
+      padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(Icons.contact_phone, color: Colors.green, size: 22),
-          const SizedBox(width: 12),
+          const Icon(Icons.contact_phone, color: Colors.green, size: 18),
+          const SizedBox(width: 10),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -94,14 +95,26 @@ class _UserProfileWatchScreenState extends State<UserProfileWatchScreen> {
                   contacto['nombre'] ?? 'Sin nombre',
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
-                    fontSize: 16,
+                    fontSize: 14,
                     color: Colors.green,
                   ),
                 ),
                 const SizedBox(height: 2),
-                Text(
-                  contacto['telefono'] ?? 'Sin teléfono',
-                  style: const TextStyle(fontSize: 14),
+                Row(
+                  children: [
+                    const Icon(Icons.email, size: 14, color: Colors.grey),
+                    const SizedBox(width: 4),
+                    Expanded(
+                      child: Text(
+                        contacto['correo'] ?? 'Sin correo',
+                        style: const TextStyle(
+                          fontSize: 13,
+                          fontStyle: FontStyle.italic,
+                          color: Colors.black87,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -124,7 +137,7 @@ class _UserProfileWatchScreenState extends State<UserProfileWatchScreen> {
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -134,11 +147,11 @@ class _UserProfileWatchScreenState extends State<UserProfileWatchScreen> {
                   _infoTile(Icons.bloodtype, 'Tipo de sangre', tipoSangre),
                   _infoTile(Icons.warning_amber_rounded, 'Alergias', alergias),
                   _infoTile(Icons.location_on, 'Dirección', direccion),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 14),
                   const Text(
                     'Contactos de emergencia',
                     style: TextStyle(
-                      fontSize: 18,
+                      fontSize: 16,
                       fontWeight: FontWeight.bold,
                       color: Colors.green,
                     ),

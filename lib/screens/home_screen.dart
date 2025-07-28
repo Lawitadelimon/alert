@@ -1,5 +1,5 @@
 import 'package:alertmecel/screens/emergency_contact.dart';
-import 'package:alertmecel/screens/user_profile_screen.dart';
+import 'package:alertmecel/screens/user_profile_screen.dart'; // <-- Importación de la pantalla perfil
 import 'package:alertmecel/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -20,42 +20,13 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  String? username;
-  bool isLoading = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadUsername();
-  }
-
-  Future<void> _loadUsername() async {
-    try {
-      final doc = await FirebaseFirestore.instance
-          .collection('usuarios')
-          .doc(widget.userId)
-          .get();
-
-      if (doc.exists) {
-        setState(() {
-          username = doc['username'] ?? 'Usuario';
-          isLoading = false;
-        });
-      }
-    } catch (e) {
-      setState(() {
-        username = 'Usuario';
-        isLoading = false;
-      });
-    }
-  }
-
   Future<void> _deleteAllReadings() async {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Confirmar borrado'),
-        content: const Text('¿Estás seguro de que quieres borrar todo el historial de lecturas? Esta acción no se puede deshacer.'),
+        content: const Text(
+            '¿Estás seguro de que quieres borrar todo el historial de lecturas? Esta acción no se puede deshacer.'),
         actions: [
           TextButton(
             child: const Text('Cancelar'),
@@ -97,22 +68,107 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         backgroundColor: AppTheme.primaryColor,
         elevation: 2,
-        title: isLoading
-            ? const Text('Cargando...')
-            : Text(
-                'Hola, ${username ?? ''}',
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
-              ),
+        title: StreamBuilder<DocumentSnapshot>(
+          stream: FirebaseFirestore.instance
+              .collection('usuarios')
+              .doc(uid)
+              .snapshots(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Text('Cargando...');
+            }
+            if (!snapshot.hasData || !snapshot.data!.exists) {
+              return const Text('Hola, Usuario');
+            }
+            final data = snapshot.data!.data() as Map<String, dynamic>?;
+            final username = data?['username'] ?? 'Usuario';
+            return Text(
+              'Hola, $username',
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+            );
+          },
+        ),
         centerTitle: true,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            tooltip: 'Cerrar sesión',
-            onPressed: () async {
-              await FirebaseAuth.instance.signOut();
-              if (!mounted) return;
-              widget.onLogout();
+          PopupMenuButton<String>(
+            onSelected: (value) async {
+              if (value == 'perfil') {
+                final user = FirebaseAuth.instance.currentUser;
+                final userDoc = await FirebaseFirestore.instance
+                    .collection('usuarios')
+                    .doc(uid)
+                    .get();
+
+                final username = userDoc.data()?['username'] ?? 'Usuario';
+                final email = user?.email ?? 'No disponible';
+
+                showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16)),
+                    contentPadding: const EdgeInsets.all(20),
+                    content: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const CircleAvatar(
+                          radius: 30,
+                          backgroundColor: Colors.green,
+                          child: Icon(Icons.person,
+                              size: 30, color: Colors.white),
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          username,
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.email,
+                                size: 16, color: Colors.grey),
+                            const SizedBox(width: 6),
+                            Flexible(
+                              child: Text(
+                                email,
+                                style: const TextStyle(color: Colors.black54),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                    actions: [
+                      TextButton.icon(
+                        onPressed: () => Navigator.of(context).pop(),
+                        icon: const Icon(Icons.close),
+                        label: const Text('Cerrar'),
+                      ),
+                    ],
+                  ),
+                );
+              } else if (value == 'logout') {
+                await FirebaseAuth.instance.signOut();
+                if (!mounted) return;
+                widget.onLogout();
+              }
             },
+            itemBuilder: (context) => [
+              const PopupMenuItem(
+                value: 'perfil',
+                child: Text('Ver perfil'),
+              ),
+              const PopupMenuItem(
+                value: 'logout',
+                child: Text('Cerrar sesión'),
+              ),
+            ],
           ),
         ],
       ),
@@ -123,18 +179,39 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             Text(
               'Bienvenido,',
-              style: AppTheme.subtitleText.copyWith(fontWeight: FontWeight.w600),
+              style:
+                  AppTheme.subtitleText.copyWith(fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 6),
-            isLoading
-                ? const CircularProgressIndicator(color: Colors.green)
-                : Text(
-                    username ?? '',
+            StreamBuilder<DocumentSnapshot>(
+              stream: FirebaseFirestore.instance
+                  .collection('usuarios')
+                  .doc(uid)
+                  .snapshots(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const CircularProgressIndicator(color: Colors.green);
+                }
+                if (!snapshot.hasData || !snapshot.data!.exists) {
+                  return Text(
+                    'Usuario',
                     style: AppTheme.titleText.copyWith(
                       color: AppTheme.primaryColor,
                       fontSize: 20,
                     ),
+                  );
+                }
+                final data = snapshot.data!.data() as Map<String, dynamic>?;
+                final username = data?['username'] ?? 'Usuario';
+                return Text(
+                  username,
+                  style: AppTheme.titleText.copyWith(
+                    color: AppTheme.primaryColor,
+                    fontSize: 20,
                   ),
+                );
+              },
+            ),
             const SizedBox(height: 24),
             Row(
               children: [
@@ -146,7 +223,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => UserProfileScreen(userId: uid),
+                            builder: (context) => const UserProfileScreen(),
                           ),
                         );
                       },
@@ -189,7 +266,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => EmergencyContactsPage(userId: uid),
+                            builder: (context) =>
+                                EmergencyContactsPage(userId: uid),
                           ),
                         );
                       },
@@ -234,7 +312,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 children: [
                   Text(
                     'Lecturas recientes',
-                    style: AppTheme.subtitleText.copyWith(fontWeight: FontWeight.w700),
+                    style: AppTheme.subtitleText
+                        .copyWith(fontWeight: FontWeight.w700),
                   ),
                   IconButton(
                     icon: const Icon(Icons.delete_forever, color: Colors.red),
@@ -257,7 +336,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     .snapshots(),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(child: CircularProgressIndicator(color: Colors.green));
+                    return const Center(
+                        child:
+                            CircularProgressIndicator(color: Colors.green));
                   }
 
                   final docs = snapshot.data?.docs ?? [];
@@ -266,7 +347,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     return Center(
                       child: Text(
                         'Sin datos aún.',
-                        style: AppTheme.bodyText.copyWith(color: Colors.grey[600]),
+                        style:
+                            AppTheme.bodyText.copyWith(color: Colors.grey[600]),
                       ),
                     );
                   }
@@ -275,11 +357,13 @@ class _HomeScreenState extends State<HomeScreen> {
                     itemCount: docs.length,
                     separatorBuilder: (_, __) => const SizedBox(height: 10),
                     itemBuilder: (context, index) {
-                      final data = docs[index].data() as Map<String, dynamic>;
+                      final data =
+                          docs[index].data() as Map<String, dynamic>;
 
                       final pulso = data['ritmo_cardiaco'] ?? 'N/A';
                       final oxigeno = data['oxigenacion'] ?? 'N/A';
-                      final fecha = (data['timestamp'] as Timestamp?)?.toDate();
+                      final fecha =
+                          (data['timestamp'] as Timestamp?)?.toDate();
 
                       return Dismissible(
                         key: Key(docs[index].id),
@@ -299,12 +383,15 @@ class _HomeScreenState extends State<HomeScreen> {
                               actions: [
                                 TextButton(
                                   child: const Text('Cancelar'),
-                                  onPressed: () => Navigator.of(context).pop(false),
+                                  onPressed: () =>
+                                      Navigator.of(context).pop(false),
                                 ),
                                 ElevatedButton(
                                   child: const Text('Eliminar'),
-                                  style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                                  onPressed: () => Navigator.of(context).pop(true),
+                                  style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.red),
+                                  onPressed: () =>
+                                      Navigator.of(context).pop(true),
                                 ),
                               ],
                             ),
@@ -325,23 +412,31 @@ class _HomeScreenState extends State<HomeScreen> {
                         child: Card(
                           color: Colors.white,
                           elevation: 4,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14)),
                           child: ListTile(
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                            contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 20, vertical: 14),
                             leading: CircleAvatar(
-                              backgroundColor: AppTheme.primaryColor.withOpacity(0.1),
-                              child: const Icon(Icons.favorite, color: AppTheme.primaryColor),
+                              backgroundColor:
+                                  AppTheme.primaryColor.withOpacity(0.1),
+                              child: const Icon(Icons.favorite,
+                                  color: AppTheme.primaryColor),
                             ),
                             title: Text(
                               'Pulso: $pulso bpm',
-                              style: AppTheme.bodyText.copyWith(fontWeight: FontWeight.bold),
+                              style: AppTheme.bodyText
+                                  .copyWith(fontWeight: FontWeight.bold),
                             ),
                             subtitle: Text(
                               'Oxígeno: $oxigeno%',
-                              style: AppTheme.bodyText.copyWith(color: Colors.grey[700]),
+                              style: AppTheme.bodyText
+                                  .copyWith(color: Colors.grey[700]),
                             ),
                             trailing: Text(
-                              fecha != null ? '${fecha.day}/${fecha.month}/${fecha.year}' : '',
+                              fecha != null
+                                  ? '${fecha.day}/${fecha.month}/${fecha.year}'
+                                  : '',
                               style: AppTheme.captionText,
                             ),
                           ),

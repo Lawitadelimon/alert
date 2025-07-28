@@ -3,7 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class UserProfileScreen extends StatefulWidget {
-  const UserProfileScreen({super.key, required String userId});
+  const UserProfileScreen({super.key});
 
   @override
   State<UserProfileScreen> createState() => _UserProfileScreenState();
@@ -153,10 +153,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                                   ),
                                 ],
                               ),
-
                               const SizedBox(height: 16),
-
-                              /// CONTACTOS DE EMERGENCIA
                               Align(
                                 alignment: Alignment.centerLeft,
                                 child: Text(
@@ -183,7 +180,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                                               const SizedBox(width: 10),
                                               Expanded(
                                                 child: Text(
-                                                  '${contacto['nombre']} - ${contacto['telefono']}',
+                                                  '${contacto['nombre']} - ${contacto['correo']}',
                                                   style: const TextStyle(fontSize: 16),
                                                 ),
                                               ),
@@ -192,7 +189,6 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                                         );
                                       }).toList(),
                                     ),
-
                               const SizedBox(height: 16),
                               Align(
                                 alignment: Alignment.bottomRight,
@@ -262,8 +258,8 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
               actions: [
                 TextButton(
                   onPressed: () {
-                    Navigator.of(context).pop();
-                    Navigator.of(context).pop();
+                    Navigator.of(context).pop(); // Cierra el dialog
+                    Navigator.of(context).pop(); // Regresa a la pantalla anterior
                   },
                   child: const Text('Aceptar'),
                 ),

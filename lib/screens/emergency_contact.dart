@@ -1,7 +1,38 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+
+class ContactoEmergencia {
+  TextEditingController nombre;
+  TextEditingController correo;
+  bool verificado;
+
+  ContactoEmergencia({
+    required this.nombre,
+    required this.correo,
+    this.verificado = false,
+  });
+
+  Map<String, String> toMap() {
+    return {
+      'nombre': nombre.text.trim(),
+      'correo': correo.text.trim(),
+    };
+  }
+
+  static ContactoEmergencia fromMap(Map<String, dynamic> map) {
+    return ContactoEmergencia(
+      nombre: TextEditingController(text: map['nombre'] ?? ''),
+      correo: TextEditingController(text: map['correo'] ?? ''),
+      verificado: true,
+    );
+  }
+
+  void dispose() {
+    nombre.dispose();
+    correo.dispose();
+  }
+}
 
 class EmergencyContactsPage extends StatefulWidget {
   const EmergencyContactsPage({super.key, required String userId});
@@ -11,12 +42,20 @@ class EmergencyContactsPage extends StatefulWidget {
 }
 
 class _EmergencyContactsPageState extends State<EmergencyContactsPage> {
-  final List<Map<String, TextEditingController>> contactos = [];
+  List<ContactoEmergencia> contactos = [];
 
   @override
   void initState() {
     super.initState();
     cargarContactos();
+  }
+
+  @override
+  void dispose() {
+    for (var contacto in contactos) {
+      contacto.dispose();
+    }
+    super.dispose();
   }
 
   void cargarContactos() async {
@@ -27,13 +66,9 @@ class _EmergencyContactsPageState extends State<EmergencyContactsPage> {
       if (data != null && data['contactos_emergencia'] != null) {
         final List<dynamic> contactosFirestore = data['contactos_emergencia'];
         setState(() {
-          contactos.clear();
-          for (var contacto in contactosFirestore) {
-            contactos.add({
-              'nombre': TextEditingController(text: contacto['nombre']),
-              'telefono': TextEditingController(text: contacto['telefono']),
-            });
-          }
+          contactos = contactosFirestore
+              .map((c) => ContactoEmergencia.fromMap(c))
+              .toList();
         });
       }
     }
@@ -42,10 +77,11 @@ class _EmergencyContactsPageState extends State<EmergencyContactsPage> {
   void agregarContacto() {
     if (contactos.length < 3) {
       setState(() {
-        contactos.add({
-          'nombre': TextEditingController(),
-          'telefono': TextEditingController(),
-        });
+        contactos.add(ContactoEmergencia(
+          nombre: TextEditingController(),
+          correo: TextEditingController(),
+          verificado: false,
+        ));
       });
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -56,8 +92,32 @@ class _EmergencyContactsPageState extends State<EmergencyContactsPage> {
 
   void eliminarContacto(int index) {
     setState(() {
+      contactos[index].dispose();
       contactos.removeAt(index);
     });
+  }
+
+  bool validarCorreo(String correo) {
+    final regex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+    return regex.hasMatch(correo);
+  }
+
+  void verificarCorreo(ContactoEmergencia contacto) {
+    String correo = contacto.correo.text.trim();
+
+    if (!validarCorreo(correo)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Correo inválido: $correo')),
+      );
+      return;
+    }
+
+    contacto.verificado = true;
+    setState(() {});
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Correo válido y registrado')),
+    );
   }
 
   void guardarContactos() async {
@@ -72,28 +132,24 @@ class _EmergencyContactsPageState extends State<EmergencyContactsPage> {
     List<Map<String, String>> contactosList = [];
 
     for (var contacto in contactos) {
-      String nombre = contacto['nombre']!.text.trim();
-      String telefono = contacto['telefono']!.text.trim();
+      String nombre = contacto.nombre.text.trim();
+      String correo = contacto.correo.text.trim();
 
-      if (nombre.isEmpty || telefono.isEmpty) {
+      if (nombre.isEmpty || correo.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Completa todos los campos antes de guardar')),
         );
         return;
       }
 
-      // Validar que el número tenga exactamente 10 dígitos
-      if (!RegExp(r'^\d{10}$').hasMatch(telefono)) {
+      if (!contacto.verificado) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Número inválido: $telefono')),
+          SnackBar(content: Text('El correo $correo no ha sido verificado')),
         );
         return;
       }
 
-      contactosList.add({
-        'nombre': nombre,
-        'telefono': telefono,
-      });
+      contactosList.add(contacto.toMap());
     }
 
     try {
@@ -165,7 +221,7 @@ class _EmergencyContactsPageState extends State<EmergencyContactsPage> {
                           child: Text('Nombre:'),
                         ),
                         TextField(
-                          controller: contacto['nombre'],
+                          controller: contacto.nombre,
                           decoration: const InputDecoration(
                             hintText: 'Nombre del contacto',
                             border: OutlineInputBorder(),
@@ -174,23 +230,24 @@ class _EmergencyContactsPageState extends State<EmergencyContactsPage> {
                         const SizedBox(height: 10),
                         const Align(
                           alignment: Alignment.centerLeft,
-                          child: Text('Teléfono:'),
+                          child: Text('Correo electrónico:'),
                         ),
                         Row(
                           children: [
                             Expanded(
                               child: TextField(
-                                controller: contacto['telefono'],
-                                keyboardType: TextInputType.number,
-                                inputFormatters: [
-                                  FilteringTextInputFormatter.digitsOnly,
-                                  LengthLimitingTextInputFormatter(10),
-                                ],
+                                controller: contacto.correo,
+                                keyboardType: TextInputType.emailAddress,
                                 decoration: const InputDecoration(
-                                  hintText: 'Ej. 5512345678',
+                                  hintText: 'ejemplo@correo.com',
                                   border: OutlineInputBorder(),
                                 ),
                               ),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.verified),
+                              color: contacto.verificado ? Colors.green : Colors.grey,
+                              onPressed: () => verificarCorreo(contacto),
                             ),
                             IconButton(
                               icon: const Icon(Icons.delete),
