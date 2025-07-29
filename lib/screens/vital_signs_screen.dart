@@ -27,6 +27,9 @@ class _VitalSignsWearScreenState extends State<VitalSignsWearScreen> with Single
   int _heartRate = 80;
   double _oxygen = 97.0;
 
+  bool _alertaMostrada = false;
+  Timer? _alertaResetTimer;
+
   @override
   void initState() {
     super.initState();
@@ -52,6 +55,7 @@ class _VitalSignsWearScreenState extends State<VitalSignsWearScreen> with Single
   void dispose() {
     _timer?.cancel();
     _controller.dispose();
+    _alertaResetTimer?.cancel();
     super.dispose();
   }
 
@@ -73,6 +77,8 @@ class _VitalSignsWearScreenState extends State<VitalSignsWearScreen> with Single
       });
 
       debugPrint('✅ Enviado automático: HR $heartRate, O2 $oxygen');
+
+      _verificarAlerta(heartRate, oxygen);
     });
   }
 
@@ -90,6 +96,74 @@ class _VitalSignsWearScreenState extends State<VitalSignsWearScreen> with Single
     });
 
     debugPrint('📝 Enviado manual: HR $_heartRate, O2 $_oxygen');
+
+    _verificarAlerta(_heartRate, _oxygen);
+  }
+
+  void _verificarAlerta(int heartRate, double oxygen) {
+    String? mensaje;
+
+    if (heartRate < 60) {
+      mensaje = "Ritmo cardíaco bajo: $heartRate bpm.";
+    } else if (heartRate > 100) {
+      mensaje = "Ritmo cardíaco alto: $heartRate bpm.";
+    }
+
+    if (oxygen < 90) {
+      mensaje = (mensaje != null ? "$mensaje\n" : "") + "Oxigenación baja: ${oxygen.toStringAsFixed(0)}%.";
+    }
+
+    if (mensaje != null) {
+      _mostrarAlerta(mensaje);
+    }
+  }
+
+  Future<void> _mostrarAlerta(String mensaje) async {
+    if (_alertaMostrada) return;
+
+    _alertaMostrada = true;
+
+    _alertaResetTimer?.cancel();
+    _alertaResetTimer = Timer(const Duration(seconds: 10), () {
+      _alertaMostrada = false;
+    });
+
+    await showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text(
+            "⚠️ Alerta",
+            style: TextStyle(fontSize: 16),
+            textAlign: TextAlign.center,
+          ),
+          content: SizedBox(
+            width: 200,
+            child: Text(
+              mensaje,
+              style: const TextStyle(fontSize: 14),
+              textAlign: TextAlign.center,
+            ),
+          ),
+          actionsPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                child: Text(
+                  "Aceptar",
+                  style: TextStyle(fontSize: 14),
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+
+    _alertaMostrada = false;
   }
 
   void _toggleSending() {
