@@ -73,6 +73,12 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.help_outline),
+            onPressed: () => _mostrarInfoFormulario(context),
+          ),
+        ],
         backgroundColor: Colors.green,
         centerTitle: true,
       ),
@@ -88,7 +94,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                       'Mis Datos Personales',
                       style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                     ),
-                    const Divider(),
+                    const Divider(color: Colors.green),
                     Expanded(
                       child: Container(
                         padding: const EdgeInsets.all(16),
@@ -249,23 +255,10 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
       });
 
       if (mounted) {
-        showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: const Text('¡Excelente!'),
-              content: const Text('Tus datos fueron guardados correctamente.'),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop(); // Cierra el dialog
-                    Navigator.of(context).pop(); // Regresa a la pantalla anterior
-                  },
-                  child: const Text('Aceptar'),
-                ),
-              ],
-            );
-          },
+        showAnimatedDialog(
+          context,
+          title: '¡Éxito!',
+          message: 'Tus datos fueron guardados correctamente.',
         );
       }
     } else {
@@ -273,5 +266,64 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
         const SnackBar(content: Text('Error: usuario no autenticado')),
       );
     }
+  }
+
+  void showAnimatedDialog(BuildContext context, {required String title, required String message}) {
+    showGeneralDialog(
+      context: context,
+      barrierDismissible: true,
+      barrierLabel: 'Dialog',
+      transitionDuration: const Duration(milliseconds: 300),
+      pageBuilder: (context, animation1, animation2) => const SizedBox.shrink(),
+      transitionBuilder: (context, animation1, animation2, child) {
+        return Transform.scale(
+          scale: animation1.value,
+          child: Opacity(
+            opacity: animation1.value,
+            child: AlertDialog(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              title: Row(
+                children: [
+                  const Icon(Icons.check_circle, color: Colors.green),
+                  const SizedBox(width: 8),
+                  Text(title),
+                ],
+              ),
+              content: Text(message),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop(); // cerrar diálogo
+                    Navigator.of(context).pop(); // volver a pantalla anterior
+                  },
+                  child: const Text('Aceptar', style: TextStyle(color: Colors.green)),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _mostrarInfoFormulario(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('¿Para qué sirve este formulario?'),
+        content: const Text(
+          'Aquí puedes registrar tus datos médicos y personales como tipo de sangre, alergias, dirección y contactos de emergencia de tu entera confianza. '
+          'Esta información será utilizada en caso de una situación urgente para brindarte ayuda de forma rápida y efectiva.'
+          'Se recomienda colocar datos veridicos y actualizados para garantizar una atención adecuada.',
+          
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cerrar', style: TextStyle(color: Colors.green)),
+          ),
+        ],
+      ),
+    );
   }
 }

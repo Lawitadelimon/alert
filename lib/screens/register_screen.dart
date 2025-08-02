@@ -73,6 +73,82 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
     return emailRegex.hasMatch(email);
   }
 
+  Future<void> _showErrorDialog(String message) async {
+    await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        backgroundColor: Colors.red[50],
+        title: const Text(
+          'Error',
+          style: TextStyle(
+            color: Colors.red,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        content: Text(
+          message,
+          style: const TextStyle(color: Colors.black87),
+        ),
+        actions: [
+          TextButton(
+            style: TextButton.styleFrom(
+              backgroundColor: Colors.red,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text(
+              'Cerrar',
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _showSuccessDialog(String message) async {
+    await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        backgroundColor: Colors.green[50],
+        title: const Text(
+          '¡Éxito!',
+          style: TextStyle(
+            color: Colors.green,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        content: Text(
+          message,
+          style: const TextStyle(color: Colors.black87),
+        ),
+        actions: [
+          TextButton(
+            style: TextButton.styleFrom(
+              backgroundColor: Colors.green,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text(
+              'Aceptar',
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Future<void> _register() async {
     final email = emailController.text.trim();
     final password = passwordController.text.trim();
@@ -82,6 +158,7 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
       setState(() {
         error = 'Por favor corrige los errores antes de continuar.';
       });
+      await _showErrorDialog(error!);
       return;
     }
 
@@ -111,34 +188,19 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
 
         if (!mounted) return;
 
-        await showDialog(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: const Text('Registro exitoso'),
-            content: const Text('Excelente, te has registrado con éxito.'),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: const Text('Aceptar'),
-              ),
-            ],
-          ),
-        );
+        await _showSuccessDialog('Excelente, te has registrado con éxito.');
 
         widget.onRegisterSuccess(uid);
       } else {
-        setState(() {
-          error = 'No se pudo obtener el UID del usuario.';
-        });
+        error = 'No se pudo obtener el UID del usuario.';
+        await _showErrorDialog(error!);
       }
     } on FirebaseAuthException catch (e) {
-      setState(() {
-        error = e.message;
-      });
+      error = e.message ?? 'Error en la autenticación.';
+      await _showErrorDialog(error!);
     } catch (_) {
-      setState(() {
-        error = 'Error inesperado.';
-      });
+      error = 'Error inesperado.';
+      await _showErrorDialog(error!);
     } finally {
       setState(() {
         isLoading = false;
@@ -162,6 +224,7 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
       appBar: AppBar(
         title: const Text('Registro'),
         centerTitle: true,
+        backgroundColor: Colors.green,
       ),
       body: Center(
         child: SingleChildScrollView(
@@ -227,9 +290,7 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                               prefixIcon: const Icon(Icons.lock, color: Colors.green),
                               suffixIcon: IconButton(
                                 icon: Icon(
-                                  isPasswordVisible
-                                      ? Icons.visibility
-                                      : Icons.visibility_off,
+                                  isPasswordVisible ? Icons.visibility : Icons.visibility_off,
                                 ),
                                 onPressed: () {
                                   setState(() {
@@ -253,12 +314,17 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                             width: double.infinity,
                             height: 48,
                             child: isLoading
-                                ? const Center(child: CircularProgressIndicator())
+                                ? const Center(
+                                    child: CircularProgressIndicator(
+                                      color: Colors.green,
+                                    ),
+                                  )
                                 : ElevatedButton.icon(
                                     icon: const Icon(Icons.person_add_alt_1),
-                                    label: const Text('Registrarse'),
+                                    label: const Text('Registrar'),
                                     style: ButtonStyle(
-                                      backgroundColor: MaterialStateProperty.resolveWith<Color>(
+                                      backgroundColor:
+                                          MaterialStateProperty.resolveWith<Color>(
                                         (states) {
                                           if (states.contains(MaterialState.hovered)) {
                                             return Colors.green.shade900;
@@ -266,10 +332,10 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                                           return Colors.green;
                                         },
                                       ),
-                                      foregroundColor: MaterialStateProperty.all<Color>(Colors.white),
-                                      overlayColor: MaterialStateProperty.all<Color>(
-                                        Colors.white.withOpacity(0.1),
-                                      ),
+                                      foregroundColor:
+                                          MaterialStateProperty.all<Color>(Colors.white),
+                                      overlayColor:
+                                          MaterialStateProperty.all<Color>(Colors.white.withOpacity(0.1)),
                                       shape: MaterialStateProperty.all<RoundedRectangleBorder>(
                                         RoundedRectangleBorder(
                                           borderRadius: BorderRadius.circular(12),

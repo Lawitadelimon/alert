@@ -135,7 +135,7 @@ class _UserProfileWatchScreenState extends State<UserProfileWatchScreen> {
         elevation: 0,
       ),
       body: isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator(color: Colors.green))
           : SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               child: Column(

@@ -3,7 +3,7 @@
     package="com.phone.alertmecel">
 
     <application
-        android:label="Phone App"
+        android:label="AlertMe"
         tools:replace="android:label">
         
         <activity

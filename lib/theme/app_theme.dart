@@ -63,5 +63,31 @@ class AppTheme {
       bodyMedium: bodyText,
       bodySmall: captionText,
     ),
+    inputDecorationTheme: InputDecorationTheme(
+      // Bordes normales
+      enabledBorder: OutlineInputBorder(
+        borderSide: BorderSide(color: primaryColor.withOpacity(0.5)),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      // Bordes cuando está enfocado
+      focusedBorder: OutlineInputBorder(
+        borderSide: BorderSide(color: primaryColor, width: 2),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      // Bordes de error
+      errorBorder: OutlineInputBorder(
+        borderSide: BorderSide(color: Colors.red, width: 2),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      // Bordes de error cuando está enfocado
+      focusedErrorBorder: OutlineInputBorder(
+        borderSide: BorderSide(color: Colors.redAccent, width: 2),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      // Color de label y hint cuando está enfocado
+      floatingLabelStyle: TextStyle(color: primaryColor),
+      // Iconos dentro de inputs tomarán el color primary
+      prefixStyle: TextStyle(color: primaryColor),
+    ),
   );
 }

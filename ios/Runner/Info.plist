@@ -47,3 +47,5 @@
 	<true/>
 </dict>
 </plist>
+<key>NSLocationWhenInUseUsageDescription</key>
+<string>Necesitamos tu ubicación para enviar alertas precisas</string>
