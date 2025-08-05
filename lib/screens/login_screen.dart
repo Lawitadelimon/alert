@@ -166,9 +166,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       try {
                         await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
                         if (mounted) {
-                          Navigator.pop(context); // Cierra el diálogo actual
-
-                          // Muestra el nuevo diálogo de confirmación
+                          Navigator.pop(context); 
                           showDialog(
                             context: context,
                             builder: (_) => AlertDialog(

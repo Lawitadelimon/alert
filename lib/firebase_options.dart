@@ -12,8 +12,7 @@ class DefaultFirebaseOptions {
     }
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
-        // Puedes personalizar aquí según el paquete
-        return androidPhone; // o usar lógica para elegir según package
+        return androidPhone; 
       case TargetPlatform.iOS:
       case TargetPlatform.macOS:
       case TargetPlatform.windows:
@@ -22,12 +21,11 @@ class DefaultFirebaseOptions {
           'DefaultFirebaseOptions not configured for this platform.',
         );
       case TargetPlatform.fuchsia:
-        // TODO: Handle this case.
+      
         throw UnimplementedError();
     }
   }
 
-  // Configuración para com.phone
   static const FirebaseOptions androidPhone = FirebaseOptions(
     apiKey: 'AIzaSyCKZynRVE0pAJ7uaRlbp3Dty45fRqMEtG8',
     appId: '1:748366412187:android:1b90d8438c5f52da00893e',
@@ -36,7 +34,6 @@ class DefaultFirebaseOptions {
     storageBucket: 'alert2-56723.firebasestorage.app',
   );
 
-  // Configuración para com.watch
   static const FirebaseOptions androidWatch = FirebaseOptions(
     apiKey: 'AIzaSyCKZynRVE0pAJ7uaRlbp3Dty45fRqMEtG8',
     appId: '1:748366412187:android:b97424d10b73e1ac00893e',

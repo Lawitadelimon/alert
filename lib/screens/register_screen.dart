@@ -175,11 +175,9 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
       final uid = user?.uid;
 
       if (user != null && uid != null) {
-        // Actualizar displayName en Firebase Authentication
         await user.updateDisplayName(username);
         await user.reload();
 
-        // Guardar usuario en Firestore
         await FirebaseFirestore.instance.collection('usuarios').doc(uid).set({
           'email': email,
           'username': username,
@@ -252,7 +250,6 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                           ),
                           const SizedBox(height: 24),
 
-                          // Nombre de usuario
                           TextField(
                             controller: usernameController,
                             decoration: InputDecoration(
@@ -266,7 +263,6 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                           ),
                           const SizedBox(height: 16),
 
-                          // Email
                           TextField(
                             controller: emailController,
                             keyboardType: TextInputType.emailAddress,
@@ -281,7 +277,6 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                           ),
                           const SizedBox(height: 16),
 
-                          // Password
                           TextField(
                             controller: passwordController,
                             obscureText: !isPasswordVisible,

@@ -6,7 +6,7 @@ class AppTheme {
   static const Color scaffoldBackground = Color(0xFFF5F7FA); 
   static const Color cardColor = Colors.white;
 
-  // Textos
+  
   static const TextStyle titleText = TextStyle(
     fontSize: 20,
     fontWeight: FontWeight.bold,
@@ -29,7 +29,6 @@ class AppTheme {
     color: Colors.black45,
   );
 
-  // Tema global para MaterialApp
   static final ThemeData themeData = ThemeData(
     primaryColor: primaryColor,
     scaffoldBackgroundColor: scaffoldBackground,
@@ -64,29 +63,28 @@ class AppTheme {
       bodySmall: captionText,
     ),
     inputDecorationTheme: InputDecorationTheme(
-      // Bordes normales
       enabledBorder: OutlineInputBorder(
         borderSide: BorderSide(color: primaryColor.withOpacity(0.5)),
         borderRadius: BorderRadius.circular(8),
       ),
-      // Bordes cuando está enfocado
+
       focusedBorder: OutlineInputBorder(
         borderSide: BorderSide(color: primaryColor, width: 2),
         borderRadius: BorderRadius.circular(8),
       ),
-      // Bordes de error
+
       errorBorder: OutlineInputBorder(
         borderSide: BorderSide(color: Colors.red, width: 2),
         borderRadius: BorderRadius.circular(8),
       ),
-      // Bordes de error cuando está enfocado
+
       focusedErrorBorder: OutlineInputBorder(
         borderSide: BorderSide(color: Colors.redAccent, width: 2),
         borderRadius: BorderRadius.circular(8),
       ),
-      // Color de label y hint cuando está enfocado
+
       floatingLabelStyle: TextStyle(color: primaryColor),
-      // Iconos dentro de inputs tomarán el color primary
+
       prefixStyle: TextStyle(color: primaryColor),
     ),
   );

@@ -8,7 +8,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 import 'user_profile_watch_screen.dart';
 
-// ...importaciones sin cambios...
 
 class VitalSignsWearScreen extends StatefulWidget {
   const VitalSignsWearScreen({super.key});
